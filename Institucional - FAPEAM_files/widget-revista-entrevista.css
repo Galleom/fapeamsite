@@ -1,0 +1,36 @@
+.revista,
+.entrevista {
+	float:left;
+	height:150px;
+	margin-bottom:10px;
+	margin-right:10px;
+}
+.aboutText {
+	/*float:right;*/
+}
+.aboutText p {
+	font-family:Tahoma, Geneva, sans-serif;
+	font-size:13px;
+	margin-bottom:10px;
+	line-height:14px;
+}
+.aboutText p.titulo {
+	font-weight:bold;
+}
+.aboutText p.data {
+	color:#909090;
+	font-size:11px;
+}
+.aboutText p a:link,
+ .aboutText p a:active,
+.aboutText p a:visited {
+	color:#000;
+}
+
+.widget_widgetrevista,
+.widget_media_viewer,
+.widget_nextgen,
+.widget_widgetentrevista,
+.widget_tv_fapeam {
+	height:215px;
+}

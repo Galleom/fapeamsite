@@ -1,0 +1,750 @@
+var global = Array();
+var zIndex_mais_alto = 100;
+
+var BrowserDetect = {
+	init: function () {
+		this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
+		this.version = this.searchVersion(navigator.userAgent)
+			|| this.searchVersion(navigator.appVersion)
+			|| "an unknown version";
+		this.OS = this.searchString(this.dataOS) || "an unknown OS";
+	},
+	searchString: function (data){
+		for (var i=0;i<data.length;i++){
+			var dataString = data[i].string;
+			var dataProp = data[i].prop;
+			this.versionSearchString = data[i].versionSearch || data[i].identity;
+			if (dataString) {
+				if (dataString.indexOf(data[i].subString) != -1)
+					return data[i].identity;
+			}
+			else if (dataProp)
+				return data[i].identity;
+		}
+	},
+	searchVersion: function (dataString) {
+		var index = dataString.indexOf(this.versionSearchString);
+		if (index == -1) return;
+		return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
+	},
+	dataBrowser: [
+		{
+			string: navigator.userAgent,
+			subString: "Chrome",
+			identity: "Chrome"
+		},
+		{ 	string: navigator.userAgent,
+			subString: "OmniWeb",
+			versionSearch: "OmniWeb/",
+			identity: "OmniWeb"
+		},
+		{
+			string: navigator.vendor,
+			subString: "Apple",
+			identity: "Safari",
+			versionSearch: "Version"
+		},
+		{
+			prop: window.opera,
+			identity: "Opera",
+			versionSearch: "Version"
+		},
+		{
+			string: navigator.vendor,
+			subString: "iCab",
+			identity: "iCab"
+		},
+		{
+			string: navigator.vendor,
+			subString: "KDE",
+			identity: "Konqueror"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Firefox",
+			identity: "Firefox"
+		},
+		{
+			string: navigator.vendor,
+			subString: "Camino",
+			identity: "Camino"
+		},
+		{		// for newer Netscapes (6+)
+			string: navigator.userAgent,
+			subString: "Netscape",
+			identity: "Netscape"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "MSIE",
+			identity: "Explorer",
+			versionSearch: "MSIE"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Gecko",
+			identity: "Mozilla",
+			versionSearch: "rv"
+		},
+		{ 		// for older Netscapes (4-)
+			string: navigator.userAgent,
+			subString: "Mozilla",
+			identity: "Netscape",
+			versionSearch: "Mozilla"
+		}
+	],
+	dataOS : [
+		{
+			string: navigator.platform,
+			subString: "Win",
+			identity: "Windows"
+		},
+		{
+			string: navigator.platform,
+			subString: "Mac",
+			identity: "Mac"
+		},
+		{
+			   string: navigator.userAgent,
+			   subString: "iPhone",
+			   identity: "iPhone/iPod"
+	    },
+		{
+			string: navigator.platform,
+			subString: "Linux",
+			identity: "Linux"
+		}
+	]
+
+};
+BrowserDetect.init();
+
+var browser_mac = BrowserDetect.browser=='Mac';
+var browser_ie = BrowserDetect.browser=='Explorer';
+var browser_firefox = BrowserDetect.browser=='Firefox';
+var browser_chrome = BrowserDetect.browser=='Chrome';
+
+function mostra_lightbox(cor,m,i,offset,local,fnc){
+ var id = "div_escurecimento";
+ if(cor==null) var cor = "#000";
+ if(local==null) var local = "";
+ if(m==null) var m = 50;
+ if(i==null) var i = 50;
+ if(offset==null) offset = 5;
+ if(!gid(id,local)){   
+  var altura = document.documentElement.scrollHeight;	
+  document.body.appendChild(criaDiv(id,"position='absolute';visibility='hidden';top='0px';left='0px';width='100%';minWidth='998px';height='"+altura+"px';backgroundColor='"+cor+"';zIndex='50'"));  
+ }
+ aumenta_zIndex(gid(id));
+ fadein(gid(id),m,i,offset,null);
+ document.body.style.overflow="hidden";
+ gid(id,local).style.visibility="visible";
+ addEvento(window,"resize",resizeLightBox);
+ if(typeof fnc == "function")
+  addEvento(gid("div_escurecimento"),"click",fnc,false); 
+}
+function resizeLightBox(){
+	
+ gid("div_escurecimento").style.height = document.documentElement.scrollHeight + "px";
+}
+function oculta_lightbox(){
+ if(gid("div_escurecimento")){
+  document.body.removeChild(gid("div_escurecimento"));
+  document.body.style.overflow="";
+  remEvento(window,"resize",resizeLightBox);
+ }
+}
+function fadein(obj,limite,intervalo,offset,fnc){
+ var level = obj.style.KhtmlOpacity?obj.style.KhtmlOpacity:obj.style.MozOpacity?obj.style.MozOpacity:obj.style.opacity?obj.style.opacity:0;
+ level = level * 100;
+ esmaecer(obj,level,"+",limite,intervalo,offset,fnc);
+}
+function fadeout(obj,limite,intervalo,offset,fnc) {
+ var level = obj.style.KhtmlOpacity?obj.style.KhtmlOpacity:obj.style.MozOpacity?obj.style.MozOpacity:obj.style.opacity?obj.style.opacity:1;
+ level = level * 100;
+ esmaecer(obj,level,"-",limite,intervalo,offset,fnc); 
+}
+function esmaecer(obj,level,op,limite,intervalo,offset,fnc){
+ if(!obj)
+  return;
+ if(offset==null) offset=20;
+ if(intervalo==null) intervalo=100;
+ if(limite==null)
+  if(op=="+")
+   limite=100;
+  else
+   limite=0;
+ obj.style.KhtmlOpacity=obj.style.MozOpacity=obj.style.opacity=level/100;
+ obj.style.filter="alpha(opacity="+level+")";
+ obj.style.display="block";
+ if((level<limite && op=="+")||(level>limite && op=="-")){ 
+  eval("level"+op+"="+offset);
+  global["timeout_fade_"+obj.id] = window.setTimeout(function(){
+  esmaecer(obj,level,op,limite,intervalo,offset,fnc)},intervalo);
+ }
+ else{  
+  if(op=="-" && limite==0)
+   obj.style.display="none";
+  if(typeof(fnc)=="function")
+   fnc();
+ }  
+}
+function contRegressiva(id,fnc,tempo){
+ gid(id).innerHTML= tempo;	
+ if(tempo!=0){  
+  tempo--;
+  setTimeout (function(){contRegressiva(id,fnc,tempo)},1000);
+ }
+ else  
+  if(typeof(fnc)=="function")
+   fnc();
+}
+function gid(elemento,parametros,aviso){
+ var elemento_temp = null;
+ if(parametros==null || typeof parametros==undefined)
+  parametros = "";  
+ if(browser_mac)
+  elemento_temp = eval(parametros+"document.all['"+elemento+"']");
+ else
+  elemento_temp = eval(parametros+"document.getElementById('"+elemento+"')");
+  
+ if(elemento_temp)
+  return elemento_temp;  
+ else if(aviso)
+  alert("O Objeto "+elemento+" não foi encontrado pela função gid");
+}
+function criaDiv(id,styleJavascript){
+ var obj = document.createElement("div");
+ obj.setAttribute("id",id);  
+ if(styleJavascript){
+  var parametro = styleJavascript.split(";");
+  var x = 0;
+  for(x=0;x<parametro.length;x++){	
+   if(parametro[x].length>0)
+	eval("obj.style."+parametro[x]);
+  }
+ }
+ return obj;
+}
+function aumenta_zIndex(obj){
+ if(typeof zIndex_mais_alto=="undefined")
+  zIndex_mais_alto = obj.style.zIndex;
+ zIndex_mais_alto++;
+ obj.style.zIndex = zIndex_mais_alto;  
+}
+function centraliza(id,win,local){
+ if(local==null)
+  var local = '';  
+ if(gid(id,local)){	
+  if(win==true) // grava a função nos eventos da janela
+   addEvento(window,"resize",function(){ centraliza(id,false,local);});
+   gid(id,local).style.position = "fixed";
+  gid(id,local).style.top = (document.documentElement.offsetHeight - gid(id).offsetHeight)/2 + "px";	    
+  gid(id,local).style.left = (document.documentElement.offsetWidth - gid(id,local).offsetWidth)/2 + "px";	  
+ }
+}
+function addEvento(elemento,evento,fnc,repetir,useCapture){
+ var repetir = (repetir==null)?false:repetir;
+ var useCapture = (useCapture==null)?false:useCapture;
+ var evento = evento.split(" ");
+ for(var i=0;i<evento.length;i++)
+  if(typeof(elemento.addEventListener)!="undefined"){
+   if(!repetir)
+    remEvento(elemento,evento[i],fnc,useCapture);
+   elemento.addEventListener(evento[i],fnc,useCapture);
+  } 
+  else{ //ie8
+   if(eval("typeof elemento.hash_evento_"+evento[i]+"=='undefined'")){
+    eval("elemento.hash_evento_"+evento[i]+" = "+Math.random());
+    global[eval("elemento.hash_evento_"+evento[i])] = Array();				
+   }
+   
+   var j;
+   for(j=0;j<global[eval("elemento.hash_evento_"+evento[i])].length;j++){
+	if(!repetir){
+	 if(global[eval("elemento.hash_evento_"+evento[i])][j]==fnc){
+	  return;
+	 }
+	}  
+   }
+   
+   global[eval("elemento.hash_evento_"+evento[i])][j] = fnc;
+
+   elemento.i = i;
+ 
+   eval("elemento.on"+evento[i]+" = " + function(e){
+	                      	 var x;
+							 var i=this.i;
+							 for(x=0;x<global[eval("elemento.hash_evento_"+evento[i])].length;x++){
+							   global[eval("elemento.hash_evento_"+evento[i])][x]();
+							 }
+                            });
+  }
+}
+function rand(i,s){
+ return parseInt(i,10)+Math.floor(Math.random()*(s - i));
+}
+function remEvento(elemento,evento,fnc,useCapture){
+ var useCapture = useCapture==null?false:useCapture;
+ var evento = evento.split(" ");
+ for(var i=0;i<evento.length;i++)
+  if(typeof(document.addEventListener)!="undefined")
+   elemento.removeEventListener(evento[i],fnc,useCapture);  
+  else if(typeof(document.attachEvent)!="undefined")
+   elemento.detachEvent("on"+evento[i],fnc);   
+  else if(typeof(global["avisoDom"])=="undefined"){
+   alert("O navegador não suporta adição/remoção de eventos ao DOM");
+   global["avisoDOM"] = true;
+  }
+}
+function preenche_div_ajax(id,url,fnc,id_atual,param,metod){
+ var xmlHttp = ajax();
+ if(xmlHttp){  
+  id_atual += "_"+rand(0,99999999);
+  global[id] = id_atual;
+  global["url_atual"] = url;   
+  xmlHttp.onreadystatechange=function() {
+   if(xmlHttp.readyState==4) {	
+	if(global[id] == id_atual){
+     var texto=xmlHttp.responseText;
+	 ExtraiScript(texto);
+	 if(gid(id))
+	  gid(id).innerHTML = texto;	
+	 if(typeof(fnc)=="function")
+	  fnc(texto);		 
+	}
+   }
+  };
+  metod = metod?metod:"get"; // get é padrão
+  xmlHttp.open(metod,url,true);	
+  if(metod.toLowerCase()=="post"){   
+   xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+   xmlHttp.send(param);
+  }
+  else{
+   if(param){
+	if(url.indexOf("?",0)>-1)
+	 url+="&"+param;
+	else
+	 url+="?"+param;
+   }    
+   xmlHttp.send("");	 
+  } 
+ }
+}
+function ajax(){
+ var xmlHttp;
+ try{
+  xmlHttp=new XMLHttpRequest(); 
+ }
+ catch(e){
+  try{
+   xmlHttp=new ActiveXObject("Msxml2.XMLHTTP"); 
+  }
+  catch(e){
+   try{
+    xmlHttp=new ActiveXObject("Microsoft.XMLHTTP");
+   }
+   catch(e){
+    alert("Seu navegador não suporta AJAX!");
+    return false;
+   }  
+  }
+ } 
+ return xmlHttp;
+}
+function ExtraiScript(texto){
+ var ini, pos_src, fim, codigo;
+ var objScript = null;
+ ini = texto.indexOf('<script', 0); 
+ while (ini!=-1){
+  var objScript = document.createElement("script");
+  pos_src = texto.indexOf('src=', ini);
+  ini = texto.indexOf('>', ini) + 1;	
+  if (pos_src < ini && pos_src >=0){
+   ini = pos_src + 4;
+   fim = texto.indexOf(' ', ini);	  
+   codigo = texto.substring(ini,fim);	 
+   codigo = codigo.replace(" ","").replace("\"","").replace("\"","").replace("\'","").replace("\'","").replace(">","");	 
+   objScript.src = codigo;
+  }
+  else{
+   fim = texto.indexOf('<'+'/script>', ini);
+   codigo = texto.substring(ini,fim);
+   objScript.text = codigo;
+  }
+  document.body.appendChild(objScript);
+  ini = texto.indexOf('<script', fim);
+  objScript = null;
+ }
+}
+function isEmail(email){
+ var exclude=/[^@\-\.\w]|^[_@\.\-]|[\._\-]{2}|[@\.]{2}|(@)[^@]*\1/;
+ var check=/@[\w\-]+\./;
+ var checkend=/\.[a-zA-Z]{2,3}$/;
+ if(((email.search(exclude) != -1)||(email.search(check)) == -1)||(email.search(checkend) == -1)){return false;}
+ else {return true;}
+}
+function enviando(bt){
+ if(bt.value.indexOf("...")>-1)
+  bt.value = bt.value.replace("...","");
+ else
+ bt.value += ".";
+}
+function controle_flash(DivID, ObjectID, width, height, movie, play, qualidade, menu, wmode, scale, allowfullscreen, swliveconnect){
+  var d = document.getElementById(DivID)
+  d.innerHTML = '<object type="application/x-shockwave-flash" data="'+movie+'" id='+ObjectID+' width='+width+' height='+height+'> <param name=movie value='+movie+'> <param name="play" value='+play+'> <param name="quality" value='+qualidade+'> <param name="menu" value='+menu+'> <param name="wmode" value='+wmode+'> <param name="scale" value='+scale+'> <param name="allowfullscreen" value='+allowfullscreen+'> <embed src='+movie+' quality='+qualidade+' pluginspage=http://www.macromedia.com/go/getflashplayer type=application/x-shockwave-flash width='+width+' height="'+height+' wmode='+wmode+' menu='+menu+' allowfullscreen='+allowfullscreen+' swliveconnect='+swliveconnect+'></embed></object>';
+}
+// função usada no player guther de mp3 widget e função
+function set_audio_atual(id){
+ if(typeof global["audio_atual"]!="undefined" && global["audio_atual"]!=id)
+  gid("objplayersound_1_"+global["audio_atual"]).stop();
+ global["audio_atual"] = id;
+}
+function set_info_playersound(id,bytesTotal,tempoTotal){
+ gid("sizefile_playersound_"+id).innerHTML = isNaN(bytesTotal)?bytesTotal:size_format(bytesTotal);
+ gid("time_playersound_"+id).innerHTML = tempoTotal;
+ console.log(id+" - "+bytesTotal+" - "+tempoTotal);
+}
+function size_format(filesize) {
+ if(filesize >= 1073741824)
+  filesize = number_format(filesize / 1073741824, 2, '.', '') + ' GB';
+ else if (filesize >= 1048576)
+  filesize = number_format(filesize / 1048576, 2, '.', '') + ' MB';
+ else if (filesize >= 1024) 
+  filesize = number_format(filesize / 1024, 0) + ' KB';
+ else
+  filesize = number_format(filesize, 0) + ' bytes';
+ return filesize;
+}
+function number_format( number, decimals, dec_point, thousands_sep ) { 
+ var n = number, c = isNaN(decimals = Math.abs(decimals)) ? 2 : decimals;
+ var d = dec_point == undefined ? "," : dec_point;
+ var t = thousands_sep == undefined ? "." : thousands_sep, s = n < 0 ? "-" : "";
+ var i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", j = (j = i.length) > 3 ? j % 3 : 0;
+ return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+}
+function getEvent(e){
+ if (!e) var e = window.event; 
+ return e;
+}
+function getTarget(e){
+ e=getEvent(e);
+ if(e.target)
+  targ = e.target;
+ else
+  if(e.srcElement)
+   targ = e.srcElement;
+  if (targ.nodeType == 3) // defeat Safari bug
+   targ = targ.parentNode;
+ return targ;
+}
+function enviarPostEmail(postId){
+ mostra_lightbox("#000",null,null,null,null,function(){
+  if(gid("div_form_recomenda"))
+   document.body.removeChild(gid("div_form_recomenda"));
+  oculta_lightbox();
+ });
+ if(!gid("div_form_recomenda")){  
+  var div = criaDiv("div_form_recomenda","position='absolute';visibility='hidden';top='0';left='0';width='auto';height='auto';zIndex='50';border='1px #024c72 solid'")
+  document.body.appendChild(div);
+  aumenta_zIndex(div);
+  div.innerHTML = "<div style='width:200px;height:100px;text-align:center;line-height:100px;background:#fff'><img src='"+images_directory+"/indicator.gif' style='vertical-align:middle'/> Carregando...</div>";  
+  centraliza(div.id,true);
+  div.style.visibility = "visible";
+  preenche_div_ajax(div.id,ajaxurl,function(){
+								  centraliza(div.id);							
+								 },null,"action=comp-control&tipo=recomenda&id="+postId,"post");
+ }
+}
+function checa_form_recomenda(){
+ var form = gid("form-recomenda");
+ var nome = form.nome.value.trim();
+ var emailfrom = form.emailfrom.value.trim();
+ var emailto = form.emailto.value.trim();
+ var coment = form.coment.value.trim();
+ var ct_captcha = form.ct_captcha.value.trim();
+ var aviso = "";
+ if(nome=="")
+  aviso = "Digite seu nome.";
+ if(emailfrom==""){
+  if(aviso!="") 
+   aviso += "\r\n";
+  aviso += "Digite seu email";	
+ } 
+ emailto = emailto.replace(/ /g,""); 
+ emailto = emailto.replace(/(\r\n|\n|\r)/gm,""); 
+ var old_emailto = emailto;
+
+ if(emailto==""){
+  if(aviso!="") 
+   aviso += "\r\n";
+  aviso += "Digite o email do destinatário.";	
+ } 
+ else{
+  if(emailto.indexOf(",")>-1){
+   var emails = emailto.split(",");
+   for(var i=0;i<emails.length;i++){
+	emailto = emails[i].trim();
+	if(!isEmail(emailto)){	
+     aviso += "\r\n";
+     aviso += "O email "+emailto+" não é um email válido.";	
+	}
+   }
+  }   
+  else if(!isEmail(emailto)){	
+     aviso += "\r\n";
+     aviso += "O email "+emailto+" não é um email válido.";	
+  }
+ }
+ 
+ if(ct_captcha==""){
+  if(aviso!="") 
+   aviso += "\r\n";
+  aviso += "Digite o código Captcha.";	
+ } 
+ else if(ct_captcha.length<4){
+  if(aviso!="") 
+   aviso += "\r\n";
+  aviso += "Digite o código Captcha corretamente.";	
+ } 
+   
+ if(aviso!=""){
+  alert(aviso);
+  return false;
+ }
+ form.emailto.value = old_emailto;
+ return true;  
+}
+function envia_recomendacao_ajax(){
+ if(checa_form_recomenda()){
+  var bt = gid("bt_envia_recomenda");
+  global[bt.id+"_valueOld"] = bt.value;
+  global[bt.id+"_classNameOld"] = bt.className;
+
+  bt.value = "Enviando";
+  bt.className = "btEnviando";
+  var intervalo = setInterval(function(){enviando(bt)},100);
+  bt.disabled = true;
+  var xmlHttp = ajax();
+  if(xmlHttp){
+   xmlHttp.onreadystatechange=function(){
+    if(xmlHttp.readyState==4){
+	 var txt = xmlHttp.responseText.trim();
+     if(txt=="ok!"){
+      gid("div_form_recomenda").innerHTML = "<div style='width:200px;height:100px;text-align:center;line-height:100px;background:#fff'>Enviado com sucesso!</div>";
+	  centraliza("div_form_recomenda");
+	 }
+	 else{
+	  if(txt.indexOf("[captcha]")>-1){
+	   alert(txt.split(":")[1]);
+	   gid("ct_captcha").value="";
+	   gid("ct_captcha").focus();	   
+	  }
+	  else
+	   alert(txt);
+	 }
+	 clearInterval(intervalo);
+     bt.value = "Enviado";
+     bt.className = global[bt.id+"_classNameOld"]; 
+	 bt.disabled = false;
+    }
+   };
+   var form = gid("form-recomenda");
+   var nome = form.nome.value.trim();
+   var emailfrom = form.emailfrom.value.trim();
+   var emailto = form.emailto.value.trim();
+   var coment = form.coment.value.trim();
+   var ct_captcha = form.ct_captcha.value.trim();
+   var id = form.id.value;
+   var param = "action=comp-control&send=1&tipo=envia_recomenda&nome="+nome+"&emailfrom="+emailfrom+"&emailto="+emailto+"&coment="+coment+"&id="+id+"&captcha="+ct_captcha;
+   xmlHttp.open("POST",ajaxurl,true);
+   xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+   xmlHttp.setRequestHeader("Content-length", param);
+   xmlHttp.send(param);
+  }  
+ } 
+ return false;
+}
+// função de chamada do Ajax slider guther gid("div_pageflip")
+function pageFlip_fechar(pageflip,postId){
+ var div_close = criaDiv("div_pageflip_close");
+ aumenta_zIndex(div_close);
+ if(gid("wpadminbar"))
+  div_close.style.top=gid("wpadminbar").offsetHeight+"px";
+ else
+  div_close.style.top=0;
+ div_close.innerHTML = "Fechar Pageflip";
+ pageflip.appendChild(div_close);
+ 
+ addEvento(div_close,"click",function(){
+						if(pageflip){					
+                         document.body.removeChild(pageflip);                 
+                         oculta_lightbox();						 
+						 if(global["altura_barra"]){
+						  var doc = document.documentElement || document.body;
+						  doc.scrollTop = global["altura_barra"];
+						 }						
+						}});
+}
+global["books_id"] = Array();
+function showSlider(postId){	
+ mostra_lightbox("#000",null,null,null,null,function(){
+  if(gid("div_pageflip"))
+   document.body.removeChild(gid("div_pageflip"));  
+  oculta_lightbox();
+  if(global["altura_barra"]){
+   var doc = document.documentElement || document.body;
+   doc.scrollTop = global["altura_barra"];
+  }			
+ });
+ 
+ if((typeof global["books_id"][postId] == "undefined") && gid("div_pageflip")){
+  document.body.removeChild(gid("div_pageflip"));
+ }
+ 
+ var div = criaDiv("div_pageflip","position='absolute';visibility='hidden';top='0';left='0';width='auto';height='auto';zIndex='50';border='1px #024c72 solid'")
+ document.body.appendChild(div);
+ aumenta_zIndex(div);
+ div.innerHTML = "<div style='width:200px;height:100px;text-align:center;line-height:100px;background:#fff'><img src='"+images_directory+"/indicator.gif' style='vertical-align:middle'/> Carregando...</div>";  
+ centraliza(div.id,true);
+ div.style.visibility = "visible";
+ preenche_div_ajax(div.id,ajaxurl,function(){
+	                                 if(div.innerHTML.indexOf("[processando]")>-1){
+									  var saida = div.innerHTML.split("[processando]")[1].trim();
+									  div.innerHTML = "";
+									  alert(saida);
+									  gid("div_escurecimento").click();	
+									 }
+									 else{									 
+								      div.style.top=div.style.left=0;
+									  pageFlip_fechar(gid("div_pageflip"),postId);
+									 }
+								   },null,"action=showslider_guther&id="+postId+"&cache="+Math.random(),"post");
+}
+function setCookie(name,value,days) {
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime()+(days*24*60*60*1000));
+        var expires = "; expires="+date.toGMTString();
+    }
+    else var expires = "";
+    document.cookie = name+"="+value+expires+"; path=/";
+}
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+function soNums(e,args){		
+ var evt=typeof event=="undefined"?e.charCode:event.keyCode; 
+ var valid_chars = '0123456789'+args;	// criando a lista de teclas permitidas
+ var chr= String.fromCharCode(evt);	// pegando a tecla digitada
+ if (valid_chars.indexOf(chr)>-1 ) // se a tecla estiver na lista de permissão permite-a
+  return true;
+ 
+ if (evt < 9) // se a tecla estiver na lista de permissão permite-a
+  return true;
+ return false;	// do contrário nega
+}
+
+jQuery(document).ready(function() {
+
+  jQuery("footer nav .menu-footer > li").each(function(index) {
+
+      if (jQuery(this).children("ul.sub-menu").size()==0) {
+          if(typeof global["primeiro"] == "undefined" ){
+            global["idUL"] = "ul_"+index;
+            jQuery(this, "first-child").append("<ul id='ul_"+index+"'>");
+            global["primeiro"] = index;
+          } else {
+            jQuery("#"+global["idUL"]).append(jQuery(this));
+            jQuery("#"+global["idUL"]).css("margin-top","42px");
+            jQuery(this).css("display","block");
+          }
+      } else {
+        delete global["primeiro"];
+      }
+    
+  });
+});
+
+function getSelectionHtml() {
+    var html = "";
+    if (typeof window.getSelection != "undefined") {
+        var sel = window.getSelection();
+        if (sel.rangeCount) {
+            var container = document.createElement("div");
+            for (var i = 0, len = sel.rangeCount; i < len; ++i) {
+                container.appendChild(sel.getRangeAt(i).cloneContents());
+            }
+            html = container.innerHTML;
+        }
+    } else if (typeof document.selection != "undefined") {
+        if (document.selection.type == "Text") {
+            html = document.selection.createRange().htmlText;
+        }
+    }
+    return html;
+}
+function utf8_to_b64( str ) {
+    return window.btoa(unescape(encodeURIComponent( str )));
+}
+function strip_tags(str, allow) {
+  // making sure the allow arg is a string containing only tags in lowercase (<a><b><c>)
+  allow = (((allow || "") + "").toLowerCase().match(/<[a-z][a-z0-9]*>/g) || []).join('');
+
+  var tags = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi;
+  var commentsAndPhpTags = /<!--[\s\S]*?-->|<\?(?:php)?[\s\S]*?\?>/gi;
+  return str.replace(commentsAndPhpTags, '').replace(tags, function ($0, $1) {
+    return allow.indexOf('<' + $1.toLowerCase() + '>') > -1 ? $0 : '';
+  });
+}
+
+function sendReadSpeaker(){	
+	
+// por ajax
+
+var texto = document.querySelector("#noticia_speaker").innerHTML;
+texto_formatado = strip_tags(texto);
+texto_formatado = utf8_to_b64(texto_formatado);
+
+parametros = btoa("audioformat=mp3" + 
+"&customerid=19" +
+"&lang=pt_br" + 
+"&output=audiolink" + 
+"&readid=noticia_speaker" + 
+"&requestgroup="+Math.random() + 
+"&requestgrouptype=html5iframe" + 
+"&rsjs_ver=2.5.6_rev2151-embhl" + 
+"&selectedhtml_base64="+texto_formatado + 
+"&speed=100" + 
+"&sync=user" + 
+"&syncalignuser=wordsent" + 
+"&synccontainer=rs:span" + 
+"&url="+document.location.href);
+
+
+preenche_div_ajax(null,ajaxurl+"?action=sendSpeaker",getUrlAudio_ReadSpeaker,null,"parametros="+parametros+"&url_readspeaker="+ escape("http://app.readspeaker.com/enterprise/iframeproxy.php?rsent=rsent&version=2&randid="+Math.random()),"post");
+
+}
+
+function getUrlAudio_ReadSpeaker(retorno){
+	var final = retorno.indexOf(".mp3");
+	var inicio = retorno.indexOf("http://lqtts.readspeaker.com");
+	var url_mp3 = retorno.substr(0,final).substr(inicio,final) + ".mp3";
+	
+	var audio = document.querySelector("#audio_readspeaker");
+	if(!audio){
+		audio = document.createElement("audio");
+		audio.id = "audio_readspeaker";
+		document.body.appendChild(audio);
+	}
+	audio.innerHTML = '<source src="'+url_mp3+'" type="audio/mpeg">';
+	audio.play();
+}

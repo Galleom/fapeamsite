@@ -1,0 +1,7 @@
+jQuery(document).ready(function($) {
+return;
+    $('#slideshow').nivoSlider({
+        controlNav: false,
+        effect: 'fade'
+    });
+});

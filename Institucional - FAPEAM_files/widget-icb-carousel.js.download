@@ -1,0 +1,38 @@
+jQuery('.app').ready(function($) {
+	/*$('.add_new').live('click', function() {
+		
+		var parent      = $(this).parent().parent();
+		var angular_div = $(this).parent();
+		
+		var image_src_value  = angular_div.find('.image_src').val();
+		var image_href_value = angular_div.find('.image_href').val();
+
+		parent.children('.ajax').find('.image_src_label').text(image_src_value);
+		parent.children('.ajax').find('.image_src').val(image_src_value);
+		
+		parent.children('.ajax').find('.image_href_label').text(image_href_value);
+		parent.children('.ajax').find('.image_href').val(image_href_value);
+		
+		var new_entry = parent.children('.ajax').html();
+		angular_div.children('.campos').append(new_entry);
+
+		// angular_div.find('.image_src').val('');
+		// angular_div.find('.image_href').val('');
+
+	});*/
+	$('.delete_this').live('click', function(evento) {
+		evento.preventDefault();
+		var parent = $(this).parent().detach();
+	});
+
+	$('.add_new').live('click', function() {
+		
+		var form_model = $('.adam').html();
+		$('.campos').append('<div class="model">' + form_model + '</div>');
+		form_model.find('.image_src').val('');
+		form_model.find('.image_href').val('');
+		console.log(form_model);
+
+	});
+
+});

@@ -1,0 +1,25 @@
+.widget .ngg-widget {
+	background: none;
+	border: none;
+	padding: 0;
+	margin: 0;
+	width: 100%;
+	overflow:hidden;
+}
+.widget .ngg-widget img {
+	border: 1px solid #efefef;
+	padding: 0;
+	margin: 0;
+	margin-bottom: 10px;
+	display: block;
+	float: left;
+}
+.widget .ngg-widget img:hover {
+	border:1px solid #005897;
+}
+.widget .ngg-widget .left {
+	float:left;
+}
+.widget .ngg-widget .right {
+	float:right;
+}

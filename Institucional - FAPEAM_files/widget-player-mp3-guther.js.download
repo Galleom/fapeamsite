@@ -1,0 +1,8 @@
+var actualprogress = 0;
+function prog(){
+ gid("indicator").style.width=actualprogress + "px";
+}
+
+function set_info_playersound_widget(nome,titulo){
+ gid("titulo_playersound_"+nome).innerHTML = titulo;
+}

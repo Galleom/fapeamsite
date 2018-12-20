@@ -1,0 +1,172 @@
+window.addEventListener("DOMContentLoaded",
+    function() {
+        var divs = document.querySelectorAll("div.container_lista_editais");
+		
+		if(divs.length>0){
+			widgetEditorias_divs = divs;
+		
+	        if (divs.length > 1) {                     
+
+    	        // inicia slider		
+        	    widgetEditorias_init();
+			
+				// inclui os métodos de parada do slider 
+				widgetEditorias_init_eventos();
+        	}
+			else{
+				// corrige a largura do container, pois não existirá o controle de rolagem, então é preciso enlarguecer mais o widget
+				widgetEditorias_set_largura();
+			}
+		
+			// corrige altura container
+            widgetEditorias_set_altura();		
+	    }
+	}
+);
+
+function widgetEditorias_init_eventos(){
+	[].forEach.call(widgetEditorias_divs,
+		function(div){
+			div.addEventListener("mouseover",stopShow);
+			div.addEventListener("mouseout",runShow);
+		});
+}
+
+function widgetEditorias_set_largura(){		
+	[].forEach.call(widgetEditorias_divs,
+		function(div){
+			div.style.width = div.parentNode.offsetWidth + "px";
+		});
+}
+
+function widgetEditorias_set_altura() {
+    // atribui altura ao container
+    altura_container = 0;
+    var container = widgetEditorias_divs[0].parentNode;
+
+    for (i = 0; widgetEditorias_divs[i]; i++) {
+        if (altura_container < widgetEditorias_divs[i].offsetHeight)
+            altura_container = widgetEditorias_divs[i].offsetHeight;
+    }
+
+    // todas as páginas do slide recebem a altura da página maior, igualando-se todas as alturas 
+    for (i = 0; widgetEditorias_divs[i]; i++) {
+        widgetEditorias_divs[i].style.height = altura_container + "px";
+    }	
+	
+	// os controles de rolagem devem adequar-se à altura do widget
+    if (document.querySelector(".widget_featured_post_nav_back")){
+        // os controles de slider recebem a altura baseada na altura do widget
+        var altura_controles = Math.round(altura_container / 2);
+        document.querySelector(".widget_featured_post_nav_back").style.height =
+            document.querySelector(".widget_featured_post_nav_next").style.height = altura_controles + "px";
+
+        // o botão Next do slider atualiza o seu posicionamento de acordo com a altura do botão Back
+        document.querySelector(".widget_featured_post_nav_next").style.top = 1 +
+            document.querySelector(".widget_featured_post_nav_back").offsetHeight +
+            document.querySelector(".widget_featured_post_nav_back").offsetTop + "px";
+        document.querySelector(".widget_featured_post_nav_next").style.backgroundPosition = "center " + (altura_controles - 14) + "px";
+    }
+	
+    // se o widget apresentar o "linkMais", então é acrescentada a altura do link no somatório
+    if (container.querySelector(".linkMais")) {
+        altura_container += container.querySelector(".linkMais").offsetHeight;
+    }
+
+    container.style.height = altura_container + 20 + "px"; // esses 20px são da margem do título 
+}
+
+function widgetEditorias_init() {
+
+    // alinhas as páginas do slider
+    for (i = 0; widgetEditorias_divs[i]; i++) {
+        var num = widgetEditorias_divs[i].id.split("_")[1];
+        if (num > 0) {
+            widgetEditorias_divs[i].style.top = widgetEditorias_divs[i].parentNode.offsetHeight + "px";
+            widgetEditorias_divs[i].style.visibility = "hidden";
+        }
+    }
+
+    // iniciar o temporizador
+    widgetEditorias_delay = widgetEditorias_divs[0].parentNode.querySelector(".delay").value;
+
+    widgetEditorias_timeout = setTimeout(widgetEditorias_init_slider, widgetEditorias_delay * 1000);
+}
+
+function widgetEditorias_init_slider() {
+    var divAtual = widgetEditorias_getAtual();
+    if (divAtual) {
+        var divProx = widgetEditorias_getProx(divAtual);
+
+        divProx.style.display = "none";
+        divProx.style.top = divProx.parentNode.offsetHeight + "px";
+        divProx.style.display = "block";
+        divProx.style.visibility = "";
+
+        widgetEditorias_do_slider_css(divAtual, divProx);
+    }
+}
+
+function widgetEditorias_getAtual() {
+    for (i = 0; widgetEditorias_divs[i]; i++) {
+        if (widgetEditorias_divs[i].offsetTop == 18)
+            return widgetEditorias_divs[i];
+    }
+}
+
+function widgetEditorias_getProx(divAtual) {
+    var num = divAtual.id.split("_")[1];
+    num++;
+    var divProx = document.querySelector("#div_" + num) ? document.querySelector("#div_" + num) : document.querySelector("#div_0");
+    return divProx;
+}
+
+function widgetEditorias_getAnt(divAtual) {
+    var num = divAtual.id.split("_")[1];
+    num--;
+    var divAnt = document.querySelector("#div_" + num) ? document.querySelector("#div_" + num) : document.querySelector("#div_" + (widgetEditorias_divs.length - 1));
+    return divAnt;
+}
+
+function widgetEditorias_do_slider_css(divAtual, divProx) {
+
+    divAtual.style.top = -1 * (divAtual.parentNode.offsetHeight) + "px";
+    divProx.style.top = "18px";
+
+    widgetEditorias_timeout = setTimeout(widgetEditorias_init_slider, widgetEditorias_delay * 1000);
+
+}
+
+function widgetEditorias_slideNext() {
+    //alert("botao next clicado");
+    clearTimeout(widgetEditorias_timeout);
+    widgetEditorias_init_slider();
+}
+
+function widgetEditorias_slideBack() {
+
+    //alert("botao back clicado");
+    clearTimeout(widgetEditorias_timeout);
+    var divAtual = widgetEditorias_getAtual();
+    if (divAtual) {
+        divAnt = widgetEditorias_getAnt(divAtual);
+
+        divAnt.style.display = "none";
+        divAnt.style.top = (-1 * divAnt.parentNode.offsetHeight) + "px";
+        divAnt.style.display = "block";
+        divAnt.style.visibility = "";
+
+        divAtual.style.top = (divAtual.parentNode.offsetHeight) + "px";
+        divAnt.style.top = "18px";
+
+        widgetEditorias_timeout = setTimeout(widgetEditorias_init_slider, widgetEditorias_delay * 1000);
+    }
+}
+
+function stopShow() {
+    clearTimeout(widgetEditorias_timeout);
+}
+
+function runShow() {
+    widgetEditorias_timeout = setTimeout(widgetEditorias_init_slider, widgetEditorias_delay * 1000);
+}

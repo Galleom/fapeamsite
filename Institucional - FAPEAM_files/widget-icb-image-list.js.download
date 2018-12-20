@@ -1,0 +1,23 @@
+function imageList_changeIMG(linkk,srcImg){
+	linkk.getElementsByTagName('img')[0].src=srcImg;
+}
+function imageList_changeH4(linkk,color){	
+		linkk.getElementsByTagName('h4')[0].style.color=color;
+}
+
+function imageList_destacaAtual(){
+	var location = document.location.href;
+	var image_list = document.getElementsByClassName("image-list");
+	for(var i=0;i<image_list.length;i++){
+		if(typeof image_list[i] == 'object'){
+			var links = image_list[i].getElementsByTagName("a");			
+			for(var j=0;j<links.length;j++){
+				if(links[j].getAttribute("href").length>0 && location.indexOf(links[j].getAttribute("href"),0)>-1){
+					links[j].getElementsByTagName("h4")[0].className += " atual";
+				}
+			}
+		}
+	}
+}	
+
+window.addEventListener("load",imageList_destacaAtual);

@@ -1,0 +1,8 @@
+jQuery(document).ready(function($) {
+   $('.linkMais').each(function(index, element) {
+		if($(this).html().indexOf("+ ")){
+			var a = $(this).html().replace("+","<span>+</span> ");
+			$(this).html(a);
+		}
+   });
+});

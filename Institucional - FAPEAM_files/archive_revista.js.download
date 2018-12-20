@@ -1,0 +1,12 @@
+function archive_revistas_resize(){
+	var revistas = document.querySelectorAll(".container-revista");
+	var maior = 0;
+	for(var i=0;i<revistas.length;i++){
+		if(revistas[i].offsetHeight > maior)
+			maior = revistas[i].offsetHeight;
+	}
+	for(var i=0;i<revistas.length;i++){  
+		revistas[i].style.height = maior + "px";
+	}
+}
+window.addEventListener("DOMContentLoaded",archive_revistas_resize);

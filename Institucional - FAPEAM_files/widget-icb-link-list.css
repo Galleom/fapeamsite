@@ -1,0 +1,10 @@
+.container_link_list {
+	position:relative;
+}
+
+.container_link_list .content-link-mais {
+	border-bottom: none;
+	bottom: -18px;
+	margin: 0px;
+	clear: both;
+}

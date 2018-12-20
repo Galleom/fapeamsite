@@ -1,0 +1,81 @@
+jQuery(document).ready(function($) {
+	
+	console.log('clickd');
+	jQuery('.terms_sortable').sortable({
+		connectWith : ".terms_sortable", 
+		receive : function(event, ui) {
+			var parent = ui.sender[0];
+			var item = ui.item[0];
+			var css_class = $(parent).attr('class');
+			if(css_class.indexOf('sortable_terms_list') !== -1) {
+				var hidden = jQuery('<input>').attr({
+					value : jQuery(item).attr('data-termid'), 
+					type  : 'hidden', 
+					name  : 'listcat_taxonomy_terms[]'
+				});
+				jQuery(item).append(hidden);
+			} else {
+				jQuery(item).children('input').remove();
+			}
+		}
+	});
+
+	// mostrar ou não o campo de link de url ao carregar.
+	$('.radio-link-list').live('click', function(evento) {
+		var div = $(this).parent().parent();
+		console.log($(this).attr('class'));
+		div.children('.field_link_list').hide();
+		if($(this).val() == 'outro') {
+			div.children('.field_link_list').show();
+		}
+	});
+
+	// carregamento de lista extra para escolher os termos da taxonomia escolhida.
+	$('.listcat_taxonomy').live('change', function(evento) {
+		var parent         = $(this);
+		var wrapper_widget = $(this).parent().parent();
+		var nonce          = wrapper_widget.find('.nonce').text();
+		var url            = wrapper_widget.find('.link').text();
+
+		wrapper_widget.find('#sortable_terms_add').html('');
+
+		$.get(
+			url, 
+			{
+				action   : 'ajax_get_terms_by_taxonomy', 
+				nonce    : nonce, 
+				taxonomy : $(this).val()
+			}, 
+			function(response) {
+				var option = '';
+				$.each(response, function(key, value) {
+					var string = "<li data-termid='" + key + "'>" + value + "</li>";
+					option = option.concat(string);
+				});
+				parent = parent.parent().parent();
+				parent.find('#sortable_terms_list').html(option);
+				parent.find('#sortable_terms_add').sortable({
+					connectWith : ".terms_sortable", 
+					receive : function(event, ui) {
+						var item = ui.item[0];
+						var hidden = jQuery('<input>').attr({
+							value : jQuery(item).attr('data-termid'), 
+							type  : 'hidden', 
+							name  : 'listcat_taxonomy_terms[]'
+						});
+						console.log(hidden);
+						jQuery(item).append(hidden);
+					}
+				});
+				parent.find('#sortable_terms_list').sortable({
+					connectWith : ".terms_sortable", 
+					receive : function(event, ui) {
+						var item = ui.item[0];
+						jQuery(item).children('input').remove();
+					}
+				});
+			},
+			'json'
+		);
+	});
+});

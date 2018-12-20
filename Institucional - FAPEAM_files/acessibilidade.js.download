@@ -1,0 +1,49 @@
+jQuery(document).ready( function () {
+    var contraste = false;
+    jQuery(".contraste a").click(function(event) {
+      if(contraste){
+        jQuery("body").css("background-color", "#ffffff");
+        jQuery("p").css("color", "#000000");
+        jQuery("h2").css("color", "#000000");
+        jQuery("h4").css("color", "#000000");
+        jQuery("h5").css("color", "#000000");
+        jQuery(".content-center a").css("color", "#000000");
+        contraste = false;
+      } else {
+        jQuery("body").css("background-color", "#000000");
+        jQuery("p").css("color", "#ffffff");
+        jQuery("h2").css("color", "#ffffff");
+        jQuery("h4").css("color", "#ffffff");
+        jQuery("h5").css("color", "#ffffff");
+        jQuery(".content-center a").css("color", "#ffffff");
+        contraste = true;
+      }
+      //Fix featured news
+      jQuery(".photo-news, .photo-news h2, .photo-news h4").css("color", "#ffffff");
+      event.preventDefault(); 
+    });
+    
+    var fonte = 3;
+    
+    jQuery(".fontemaior a").click(function(event){
+      if(fonte < 6){
+        fonte += 1;
+        jQuery(".content-center *").each(function(){
+          var fontsize = parseInt(jQuery(this).css("font-size"));
+          jQuery(this).css("font-size", fontsize + 2 + "px");
+        });
+      }
+      event.preventDefault();
+    });
+    
+    jQuery(".fontemenor a").click(function(event){
+      if(fonte > 0){
+        fonte -= 1;
+        jQuery(".content-center *").each(function(){
+          var fontsize = parseInt(jQuery(this).css("font-size"));
+          jQuery(this).css("font-size", fontsize - 2 + "px");
+        });
+      }
+      event.preventDefault(); 
+    });
+});

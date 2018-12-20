@@ -1,0 +1,7 @@
+jQuery('.carousel').flexisel({
+	visibleItems: 4,
+	animationSpeed: 800,
+	autoPlay: true,
+    autoPlaySpeed: 3000,
+    pauseOnHover: true
+});
